@@ -1,0 +1,31 @@
+# Project CMakeLists.txt
+cmake_minimum_required(VERSION 3.21)
+
+project(CMakeSFMLProject LANGUAGES CXX)
+
+# Set the SFML root directory
+set(SFML_DIR "../sfml/lib/cmake/SFML")
+
+# Find SFML
+find_package(SFML 2.5.1 COMPONENTS graphics audio REQUIRED)
+
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/*.cpp")
+add_executable(CMakeSFMLProject ${sources})
+
+file(GLOB_RECURSE headers CONFIGURE_DEPENDS "src/*.h")
+target_sources(CMakeSFMLProject PRIVATE ${headers})
+
+target_link_libraries(CMakeSFMLProject PRIVATE sfml-graphics)
+target_compile_features(CMakeSFMLProject PRIVATE cxx_std_20)
+
+if (WIN32)
+    add_custom_command(TARGET CMakeSFMLProject POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:CMakeSFMLProject> $<TARGET_FILE_DIR:CMakeSFMLProject> COMMAND_EXPAND_LISTS)
+endif()
+
+# Set the asset path macro based on the build type
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/")
+else()
+  target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="./assets/")
+endif()
